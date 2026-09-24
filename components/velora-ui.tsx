@@ -2,10 +2,10 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
 import { Link, router } from "expo-router";
 import { useMemo, useState } from "react";
-import { ActivityIndicator, Alert, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, Linking, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { trpc } from "@/lib/trpc";
-import { formatEventDate, formatMoney } from "@/shared/velora";
+import { formatEventDate, formatMoney, VELORA_CONTACTS } from "@/shared/velora";
 
 export const PALETTE = {
   cream: "#FAF8F4",
@@ -172,6 +172,7 @@ export function AssistantButton() {
             ))}
             {ask.isPending ? <View style={styles.messageWrap}><View style={styles.assistantMessage}><ActivityIndicator size="small" color={PALETTE.champagne} /></View></View> : null}
           </ScrollView>
+          <Pressable onPress={() => Linking.openURL(VELORA_CONTACTS.whatsappUrl)} style={styles.assistantWhatsApp}><MaterialIcons name="chat" size={16} color={PALETTE.success} /><Text style={styles.assistantWhatsAppText}>Chat with VÉLORA on WhatsApp</Text><MaterialIcons name="open-in-new" size={15} color={PALETTE.success} /></Pressable>
           <View style={styles.chatInputRow}>
             <TextInput value={message} onChangeText={setMessage} onSubmitEditing={send} placeholder="Ask about an event or ticket tier" placeholderTextColor={PALETTE.muted} style={styles.chatInput} returnKeyType="send" />
             <Pressable onPress={send} style={({ pressed }) => [styles.sendButton, pressed && styles.pressed]}><MaterialIcons name="arrow-upward" size={20} color={PALETTE.cream} /></Pressable>
@@ -241,6 +242,8 @@ export const styles = StyleSheet.create({
   assistantSubhead: { fontSize: 11, color: PALETTE.muted, marginTop: 5 },
   assistantNotice: { margin: 16, padding: 11, borderRadius: 5, backgroundColor: "#E8F0EA", flexDirection: "row", gap: 8, alignItems: "flex-start" },
   assistantNoticeText: { flex: 1, color: PALETTE.success, fontSize: 11, lineHeight: 15 },
+  assistantWhatsApp: { marginHorizontal: 16, marginBottom: 10, minHeight: 42, paddingHorizontal: 12, borderWidth: 1, borderColor: "#B8D0BF", backgroundColor: "#E8F0EA", borderRadius: 5, flexDirection: "row", alignItems: "center", gap: 8 },
+  assistantWhatsAppText: { flex: 1, color: PALETTE.success, fontSize: 11, fontWeight: "800", letterSpacing: 0.2 },
   chatList: { paddingHorizontal: 18, paddingBottom: 18, gap: 12 },
   messageWrap: { alignItems: "flex-start", maxWidth: "88%" },
   userMessageWrap: { alignSelf: "flex-end", alignItems: "flex-end" },

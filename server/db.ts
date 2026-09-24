@@ -80,6 +80,9 @@ export async function ensureSeeded(): Promise<void> {
         state: event.state,
         description: event.description,
         imageKey: event.imageKey,
+        verificationStatus: event.verificationStatus,
+        officialSourceUrl: null,
+        address: null,
         isVeloraPick: event.isVeloraPick,
         isTrending: event.isTrending,
         isPublished: true,
@@ -111,6 +114,8 @@ export async function ensureSeeded(): Promise<void> {
           desiredMargin: String(tier.desiredMargin),
           label: tier.label,
           transferMethod: tier.delivery,
+          verificationStatus: tier.verificationStatus,
+          ticketUrl: null,
           ticketStatus: tier.status === "AVAILABLE" ? ("AVAILABLE" as const) : ("AVAILABLE" as const),
           transferStatus: "NOT_READY" as const,
           pricingReviewRequired: pricing.reviewRequired,
@@ -275,6 +280,8 @@ export async function getCatalogContext() {
     category: event.category,
     fromPrice: event.fromPrice,
     isDemo: event.isDemo,
+    verificationStatus: event.verificationStatus,
+    officialSourceUrl: event.officialSourceUrl,
   }));
 }
 

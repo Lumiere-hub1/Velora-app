@@ -9,6 +9,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { sdk } from "./sdk";
 import { runDailyContent } from "../content-engine";
+import { runCatalogSync } from "../catalog-sync";
 import * as veloraDb from "../db";
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -94,6 +95,23 @@ async function startServer() {
         error: error instanceof Error ? error.message : "Content automation failed",
         timestamp: new Date().toISOString(),
         context: { path: "/api/scheduled/content" },
+      });
+    }
+  });
+
+  app.post("/api/scheduled/catalog", async (req, res) => {
+    try {
+      const user = await sdk.authenticateRequest(req);
+      if (!user.isCron || !user.taskUid) {
+        return res.status(403).json({ error: "cron-only" });
+      }
+      const result = await runCatalogSync();
+      return res.json({ ok: true, ...result });
+    } catch (error) {
+      return res.status(500).json({
+        error: error instanceof Error ? error.message : "Catalog synchronization failed",
+        timestamp: new Date().toISOString(),
+        context: { path: "/api/scheduled/catalog" },
       });
     }
   });

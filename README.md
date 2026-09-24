@@ -103,3 +103,13 @@ Do not purchase or connect a custom domain until a business owner expressly appr
 ## GitHub
 
 The source is intended to be pushed to the connected `Lumiere-hub1/Velora-app` repository without secrets. The repository remains the portable source-of-truth; managed runtime credentials and database state are not committed.
+
+## Live catalog integration boundary
+
+The current application is intentionally **DEMO / TEST** data only. Every bundled event and ticket tier is stored with `UNVERIFIED` status, no official source URL, and no ticket URL. Search, event detail, and the assistant use database-backed records and do not fabricate a fallback event when the database query is unavailable.
+
+To enable automatic discovery and verification, configure both `VELORA_EVENT_PROVIDER_API_URL` and `VELORA_EVENT_PROVIDER_API_KEY` in the deployment environment, then implement the provider-specific adapter for the approved provider response contract. The scheduled endpoint is `POST /api/scheduled/catalog`; it is cron-authenticated and fails safe until the provider adapter is approved. The adapter must supply authoritative event identity, venue, date/time, cancellation/status updates, source URL, ticket URL, price, availability, delivery method, and a stable source identifier. Records without those fields must remain `VERIFICATION PENDING` or `UNVERIFIED`; duplicates should be merged by the provider/source identifier before publishing.
+
+The app currently includes the protected admin status control and scheduler boundary, but it does not pretend that arbitrary provider credentials are enough to make live claims. Add the provider contract and professional legal/policy review before disabling DEMO MODE or auto-publishing live inventory.
+
+Official contact actions currently point to `veloratickets@proton.me`, the VÉLORA TikTok profile, and the VÉLORA WhatsApp chat link defined in `shared/velora.ts`.

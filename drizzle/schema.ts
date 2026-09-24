@@ -30,7 +30,7 @@ export const events = mysqlTable(
     id: int("id").autoincrement().primaryKey(),
     slug: varchar("slug", { length: 180 }).notNull(),
     title: varchar("title", { length: 255 }).notNull(),
-    category: mysqlEnum("category", ["Concerts", "Sports", "Theater", "Comedy", "Festivals", "Experiences"])
+    category: mysqlEnum("category", ["Concerts", "Sports", "Theater", "Comedy", "Festivals", "Family", "Experiences"])
       .notNull(),
     artist: varchar("artist", { length: 255 }).notNull(),
     startsAt: timestamp("startsAt").notNull(),
@@ -39,6 +39,9 @@ export const events = mysqlTable(
     state: varchar("state", { length: 2 }).notNull(),
     description: text("description").notNull(),
     imageKey: varchar("imageKey", { length: 32 }).notNull(),
+    verificationStatus: mysqlEnum("verificationStatus", ["VERIFIED", "VERIFICATION PENDING", "UNVERIFIED"]).default("UNVERIFIED").notNull(),
+    officialSourceUrl: varchar("officialSourceUrl", { length: 500 }),
+    address: varchar("address", { length: 255 }),
     isVeloraPick: boolean("isVeloraPick").default(false).notNull(),
     isTrending: boolean("isTrending").default(false).notNull(),
     isPublished: boolean("isPublished").default(true).notNull(),
@@ -73,6 +76,8 @@ export const inventory = mysqlTable(
     desiredMargin: decimal("desiredMargin", { precision: 10, scale: 2 }).default("0").notNull(),
     label: varchar("label", { length: 64 }),
     transferMethod: varchar("transferMethod", { length: 100 }).default("Digital delivery").notNull(),
+    verificationStatus: mysqlEnum("verificationStatus", ["VERIFIED", "VERIFICATION PENDING", "UNVERIFIED"]).default("UNVERIFIED").notNull(),
+    ticketUrl: varchar("ticketUrl", { length: 500 }),
     ticketStatus: mysqlEnum("ticketStatus", ["AVAILABLE", "RESERVED", "SOLD", "PENDING TRANSFER", "DELIVERED", "CANCELLED"])
       .default("AVAILABLE")
       .notNull(),
@@ -166,6 +171,10 @@ export const contentAutomation = mysqlTable("content_automation", {
   autoPublish: boolean("autoPublish").default(true).notNull(),
   cronExpression: varchar("cronExpression", { length: 100 }).default("0 0 14 * * *").notNull(),
   scheduleCronTaskUid: varchar("scheduleCronTaskUid", { length: 65 }),
+  catalogSyncEnabled: boolean("catalogSyncEnabled").default(false).notNull(),
+  catalogSyncTaskUid: varchar("catalogSyncTaskUid", { length: 65 }),
+  catalogLastRunAt: timestamp("catalogLastRunAt"),
+  catalogLastStatus: varchar("catalogLastStatus", { length: 255 }).default("Provider not configured").notNull(),
   lastRunAt: timestamp("lastRunAt"),
   nextRunAt: timestamp("nextRunAt"),
   lastStatus: varchar("lastStatus", { length: 80 }).default("Not scheduled").notNull(),

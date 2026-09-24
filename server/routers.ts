@@ -7,6 +7,7 @@ import { createHeartbeatJob, deleteHeartbeatJob, updateHeartbeatJob } from "./_c
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
 import { runDailyContent, updateCatalogSeoOpportunities } from "./content-engine";
+import { getCatalogProviderStatus, runCatalogSync } from "./catalog-sync";
 
 const eventFilter = z.object({
   query: z.string().max(120).optional(),
@@ -85,7 +86,7 @@ export const appRouter = router({
             "Every catalog item currently has isDemo=true and must be presented as DEMO/TEST, not as a live ticket offer.",
             "No actual payment credentials, actual delivery confirmation, real refund approval, real availability or real market price exists in this data.",
             "Never estimate or invent an event, ticket, price, availability, venue, policy, delivery timeline or legal commitment.",
-            "When the database has no answer, say that VÉLORA cannot verify it yet and direct the visitor to available catalog records or support@velora.com.",
+            "When the database has no answer, say that VÉLORA cannot verify it yet and direct the visitor to available catalog records or veloratickets@proton.me.",
           ],
         };
         const system = `You are VÉLORA Assist, a concise premium ticket marketplace guide. Answer from ONLY the verified data in the JSON context. You can help find catalog records, compare shown ticket tiers, explain the DEMO checkout flow and summarize explicitly supplied policy facts. If no relevant record exists, say you cannot verify that information. Link relevant records by adding a final line in this exact format when applicable: RELATED_SLUGS: slug-one,slug-two. Never write URLs. Never claim something is live, available, confirmed, delivered, refundable, secure, cheapest, or guaranteed.\n\nCONTEXT:\n${JSON.stringify(context)}`;
@@ -121,13 +122,32 @@ export const appRouter = router({
       return { ok: true };
     }),
     automation: protectedProcedure
-      .input(z.object({ action: z.enum(["enable", "disable", "run", "refresh-opportunities"]), autoPublish: z.boolean().optional() }))
+      .input(z.object({ action: z.enum(["enable", "disable", "run", "refresh-opportunities", "catalog-enable", "catalog-disable", "catalog-run"]), autoPublish: z.boolean().optional() }))
       .mutation(async ({ ctx, input }) => {
         assertAdmin(ctx.user);
         const automation = await db.getAutomation();
         if (!automation) throw new Error("Automation record unavailable");
         if (input.action === "run") return runDailyContent({ force: true });
         if (input.action === "refresh-opportunities") return updateCatalogSeoOpportunities();
+        if (input.action === "catalog-run") {
+          const result = await runCatalogSync();
+          await db.updateAutomation(automation.id, { catalogLastRunAt: new Date(), catalogLastStatus: result.message });
+          return result;
+        }
+        if (input.action === "catalog-enable") {
+          if (automation.catalogSyncTaskUid) return db.updateAutomation(automation.id, { catalogSyncEnabled: true });
+          const job = await createHeartbeatJob({
+            name: "velora-catalog-sync",
+            cron: automation.cronExpression,
+            path: "/api/scheduled/catalog",
+            description: "Verify and refresh VÉLORA event and ticket records",
+          }, sessionToken(ctx.req.headers.cookie));
+          return db.updateAutomation(automation.id, { catalogSyncEnabled: true, catalogSyncTaskUid: job.taskUid, catalogLastStatus: "Scheduled provider verification", lastStatus: "Content and catalog schedules enabled" });
+        }
+        if (input.action === "catalog-disable") {
+          if (automation.catalogSyncTaskUid) await updateHeartbeatJob(automation.catalogSyncTaskUid, { enable: false }, sessionToken(ctx.req.headers.cookie));
+          return db.updateAutomation(automation.id, { catalogSyncEnabled: false, catalogLastStatus: "Catalog sync paused" });
+        }
         const enabled = input.action === "enable";
         if (enabled && !automation.scheduleCronTaskUid) {
           const job = await createHeartbeatJob({
@@ -151,6 +171,14 @@ export const appRouter = router({
       if (automation?.scheduleCronTaskUid) await deleteHeartbeatJob(automation.scheduleCronTaskUid, sessionToken(ctx.req.headers.cookie));
       if (automation) await db.updateAutomation(automation.id, { isEnabled: false, scheduleCronTaskUid: null, lastStatus: "Schedule removed" });
       return { ok: true };
+    }),
+    catalogStatus: protectedProcedure.query(({ ctx }) => {
+      assertAdmin(ctx.user);
+      return getCatalogProviderStatus();
+    }),
+    catalogSync: protectedProcedure.mutation(async ({ ctx }) => {
+      assertAdmin(ctx.user);
+      return runCatalogSync();
     }),
   }),
 });

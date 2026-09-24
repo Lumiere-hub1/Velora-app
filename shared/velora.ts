@@ -4,7 +4,18 @@ export type EventCategory =
   | "Theater"
   | "Comedy"
   | "Festivals"
+  | "Family"
   | "Experiences";
+
+export type VerificationStatus = "VERIFICATION PENDING" | "UNVERIFIED" | "VERIFIED";
+
+export const VELORA_CONTACTS = {
+  email: "veloratickets@proton.me",
+  emailUrl: "mailto:veloratickets@proton.me",
+  tiktokLabel: "VÉLORA Tickets",
+  tiktokUrl: "https://www.tiktok.com/@veloratickets",
+  whatsappUrl: "https://wa.me/17426660496",
+} as const;
 
 export type DemoEvent = {
   slug: string;
@@ -21,6 +32,7 @@ export type DemoEvent = {
   isVeloraPick: boolean;
   isTrending: boolean;
   isDemo: true;
+  verificationStatus: VerificationStatus;
   badge?: string;
 };
 
@@ -39,6 +51,7 @@ export type TicketTier = {
   taxes: number;
   desiredMargin: number;
   status: "AVAILABLE" | "PRICING REVIEW REQUIRED";
+  verificationStatus: VerificationStatus;
 };
 
 export type PricingResult = {
@@ -67,6 +80,7 @@ export const DEMO_EVENTS: DemoEvent[] = [
     isVeloraPick: true,
     isTrending: true,
     isDemo: true,
+    verificationStatus: "UNVERIFIED",
     badge: "VÉLORA PICK",
   },
   {
@@ -85,6 +99,7 @@ export const DEMO_EVENTS: DemoEvent[] = [
     isVeloraPick: true,
     isTrending: true,
     isDemo: true,
+    verificationStatus: "UNVERIFIED",
     badge: "LAST-MINUTE",
   },
   {
@@ -103,6 +118,7 @@ export const DEMO_EVENTS: DemoEvent[] = [
     isVeloraPick: false,
     isTrending: true,
     isDemo: true,
+    verificationStatus: "UNVERIFIED",
   },
   {
     slug: "late-set-austin-demo",
@@ -120,6 +136,7 @@ export const DEMO_EVENTS: DemoEvent[] = [
     isVeloraPick: false,
     isTrending: false,
     isDemo: true,
+    verificationStatus: "UNVERIFIED",
     badge: "TONIGHT",
   },
   {
@@ -138,6 +155,7 @@ export const DEMO_EVENTS: DemoEvent[] = [
     isVeloraPick: true,
     isTrending: true,
     isDemo: true,
+    verificationStatus: "UNVERIFIED",
     badge: "VÉLORA PICK",
   },
   {
@@ -156,6 +174,7 @@ export const DEMO_EVENTS: DemoEvent[] = [
     isVeloraPick: false,
     isTrending: false,
     isDemo: true,
+    verificationStatus: "UNVERIFIED",
   },
   {
     slug: "midnight-motion-demo",
@@ -173,6 +192,7 @@ export const DEMO_EVENTS: DemoEvent[] = [
     isVeloraPick: false,
     isTrending: false,
     isDemo: true,
+    verificationStatus: "UNVERIFIED",
   },
   {
     slug: "open-court-series-demo",
@@ -190,6 +210,7 @@ export const DEMO_EVENTS: DemoEvent[] = [
     isVeloraPick: false,
     isTrending: false,
     isDemo: true,
+    verificationStatus: "UNVERIFIED",
   },
   {
     slug: "bloom-after-dark-demo",
@@ -207,6 +228,7 @@ export const DEMO_EVENTS: DemoEvent[] = [
     isVeloraPick: true,
     isTrending: false,
     isDemo: true,
+    verificationStatus: "UNVERIFIED",
   },
 ];
 
@@ -226,6 +248,7 @@ export const TICKET_TIERS: TicketTier[] = [
     taxes: 9,
     desiredMargin: 18,
     status: "AVAILABLE",
+    verificationStatus: "UNVERIFIED",
   },
   {
     id: "demo-club-2",
@@ -242,6 +265,7 @@ export const TICKET_TIERS: TicketTier[] = [
     taxes: 8,
     desiredMargin: 15,
     status: "AVAILABLE",
+    verificationStatus: "UNVERIFIED",
   },
   {
     id: "demo-upper-3",
@@ -258,6 +282,7 @@ export const TICKET_TIERS: TicketTier[] = [
     taxes: 6,
     desiredMargin: 14,
     status: "AVAILABLE",
+    verificationStatus: "UNVERIFIED",
   },
   {
     id: "demo-vip-4",
@@ -274,6 +299,7 @@ export const TICKET_TIERS: TicketTier[] = [
     taxes: 14,
     desiredMargin: 24,
     status: "PRICING REVIEW REQUIRED",
+    verificationStatus: "UNVERIFIED",
   },
 ];
 
@@ -368,5 +394,6 @@ export const CATEGORIES: EventCategory[] = [
   "Theater",
   "Comedy",
   "Festivals",
+  "Family",
   "Experiences",
 ];
